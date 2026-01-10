@@ -134,18 +134,18 @@ func parse(_ content: String) -> [String: Any]? {
 	var metadata = [:] as [String: [String]]
 	// iterate through the possible metadata keys in file
 	if let metas = Range(match.range(at: g2), in: content) {
+		let p = #"^(?:[ \t]*(?:\/\/)?[ \t]*@)([\w-]+)[ \t]+([^\s]+[^\r\n\t\v\f]*)"#
+		// this pattern checks for specific keys that won't have values
+		let p2 = #"^(?:[ \t]*(?:\/\/)?[ \t]*@)(noframes)[ \t]*$"#
+		// force try b/c pattern is known to be valid regex
+		let re = try! NSRegularExpression(pattern: p, options: [])
+		let re2 = try! NSRegularExpression(pattern: p2, options: [])
 		// split metadatas by new line
 		let metaArray = content[metas].split(whereSeparator: \.isNewline)
 		// loop through metadata lines and populate metadata dictionary
 		for meta in metaArray {
-			let p = #"^(?:[ \t]*(?:\/\/)?[ \t]*@)([\w-]+)[ \t]+([^\s]+[^\r\n\t\v\f]*)"#
-			// this pattern checks for specific keys that won't have values
-			let p2 = #"^(?:[ \t]*(?:\/\/)?[ \t]*@)(noframes)[ \t]*$"#
 			// the individual meta string, ie. // @name File Name
 			let metaString = String(meta).trimmingCharacters(in: .whitespaces)
-			// force try b/c pattern is known to be valid regex
-			let re = try! NSRegularExpression(pattern: p, options: [])
-			let re2 = try! NSRegularExpression(pattern: p2, options: [])
 			let range = NSRange(location: 0, length: metaString.utf16.count)
 			// key lines not properly prefixed & without values will be skipped
 			if let m = re.firstMatch(in: metaString, options: [], range: range) {
